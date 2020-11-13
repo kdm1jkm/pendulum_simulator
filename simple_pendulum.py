@@ -1,39 +1,69 @@
-from vpython import *
+import math
+import numpy as np
+from typing import Tuple, List
+import matplotlib as mpl
+import matplotlib.pylab as plt
+from tqdm import tqdm
+import pygame
+from pygame.locals import *
+
+G = 9.8
 
 
-g = 9.8
+class simple_pendulum:
+    def __init__(self):
+        self.length: float = 1
+        self.theta: float = 60
+        self.theta_dot: float = 0
+        self.dt: float = 0.01
+        self.radius: float = 0.01
+        self.viscosity: float = 0.0000174
+        self.time: float = 0
+
+    def run_with_input(self) -> Tuple[np.ndarray, np.ndarray]:
+        self.get_input()
+        t = float(input("time>>"))
+        return self.process(t)
+
+    def get_input(self) -> None:
+        self.length = float(input("length>>"))
+        self.theta = float(input("theta>>"))
+        self.theta_dot = float(input("theta dot>>"))
+        self.dt = float(input("dt>>"))
+        self.radius = float(input("radius>>"))
+        self.viscosity = float(input("viscosity>>"))
+
+    def process(self, max_time: float) -> Tuple[np.ndarray, np.ndarray]:
+        times = []
+        thetas = []
+        for i in tqdm(np.arange(self.time, max_time, self.dt)):
+            times.append(i)
+            thetas.append(self.theta)
+
+            self.step()
+
+        return (np.array(times), np.array(thetas))
+
+    def step(self):
+        mu = 6 * math.pi * self.viscosity * self.radius
+        ΔΔθ = (
+            -G / self.length * math.sin(math.radians(self.theta))
+            - mu * self.theta_dot * self.dt
+        )
+        self.theta_dot += ΔΔθ * self.dt
+        self.theta += self.theta_dot * self.dt
+
+    def simulate(self):
+        pygame.init()
+        screen = pygame.display.set_mode([700, 500])
+        clock = pygame.time.Clock()
 
 
-def main():
-    length = float(input("Enter length>>"))
-    theta = float(input("Enter theta>>"))
-    theta_dot = float(input("Enter theta_dot>>"))
-    dt = float(input("Enter dt>>"))
-    radius = float(input("Enter radius>>"))
-    viscosity = float(input("Enter viscosity>>"))
-    mu = 6 * pi * viscosity * radius
+if __name__ == "__main__":
+    obj = simple_pendulum()
+    times, thetas = obj.run_with_input()
 
-    # display(width=600, height=600, center=vector(0, 12, 0), background=color.white)
-    scene.width = scene.height = 600
-    scene.center = vector(0, 12, 0)
-
-    bob = sphere(pos=vector(5, 40, 0), radius=radius*10, color=color.blue)
-    pivot = vector(0, 20, 0)
-    rod = cylinder(pos=pivot, axis=bob.pos-pivot, radius=0.1, color=color.red)
-
-    time = 0
-
-    while(True):
-        theta_double_dot = -g/length*sin(radians(theta)) - mu*theta_dot*dt
-        theta_dot += theta_double_dot*dt
-        theta += theta_dot*dt
-
-        rate(int(1/dt))
-        bob.pos = vector(length*10*sin(radians(theta)), pivot.y-length*10*cos(radians(theta)),
-                         0)  # calculating position
-        rod.axis = bob.pos-rod.pos  # updating other end of rod of pendulum'
-
-        time += dt
-
-
-main()
+    plt.figure(1)
+    plt.title("thetas")
+    plt.plot(times, thetas)
+    plt.show()
