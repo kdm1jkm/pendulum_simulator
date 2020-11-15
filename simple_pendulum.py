@@ -1,16 +1,23 @@
 import math
+import sys
+from typing import Tuple
+
 import numpy as np
-from typing import Tuple, List
-import matplotlib as mpl
-import matplotlib.pylab as plt
-from tqdm import tqdm
 import pygame
-from pygame.locals import *
+from tqdm import tqdm
 
 G = 9.8
+myfont = pygame.font.SysFont('Comic Sans MS', 38)
+w, h = 1024, 768
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+LT_BLUE = (230, 230, 255)
+offset = (w // 2, h // 4)
 
 
-class simple_pendulum:
+class SimplePendulum:
     def __init__(self):
         self.length: float = 1
         self.theta: float = 60
@@ -19,6 +26,10 @@ class simple_pendulum:
         self.radius: float = 0.01
         self.viscosity: float = 0.0000174
         self.time: float = 0
+
+    def simulate_with_input(self) -> None:
+        self.get_input()
+        self.simulate()
 
     def run_with_input(self) -> Tuple[np.ndarray, np.ndarray]:
         self.get_input()
@@ -42,28 +53,42 @@ class simple_pendulum:
 
             self.step()
 
-        return (np.array(times), np.array(thetas))
+        return np.array(times), np.array(thetas)
 
     def step(self):
         mu = 6 * math.pi * self.viscosity * self.radius
-        ΔΔθ = (
-            -G / self.length * math.sin(math.radians(self.theta))
-            - mu * self.theta_dot * self.dt
+        double_dot_theta = (
+                -G / self.length * math.sin(math.radians(self.theta))
+                - mu * self.theta_dot * self.dt
         )
-        self.theta_dot += ΔΔθ * self.dt
+        self.theta_dot += double_dot_theta * self.dt
         self.theta += self.theta_dot * self.dt
 
     def simulate(self):
         pygame.init()
-        screen = pygame.display.set_mode([700, 500])
+        screen = pygame.display.set_mode([w, h])
         clock = pygame.time.Clock()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+
+            x, y = self.length * math.sin(math.radians(self.theta)), self.length * math.sin(math.radians(self.theta))
+
+            screen.fill(WHITE)
+            pygame.draw.circle(screen, BLACK, offset, 8)
+            pygame.draw.circle(screen, BLUE, (x, y), 10)
+
+            time_string = 'Time: {} seconds'.format(round(self.time, 1))
+            text = myfont.render(time_string, False, (0, 0, 0))
+            screen.blit(text, (10, 10))
+
+            self.step()
+            clock.tick(int(1 / self.dt))
+            pygame.display.update()
 
 
 if __name__ == "__main__":
-    obj = simple_pendulum()
-    times, thetas = obj.run_with_input()
-
-    plt.figure(1)
-    plt.title("thetas")
-    plt.plot(times, thetas)
-    plt.show()
+    obj = SimplePendulum()
+    obj.simulate_with_input()
