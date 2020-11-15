@@ -1,15 +1,13 @@
-import numpy as np
 import math
-from typing import Tuple, List
-import matplotlib as mpl
+
 import matplotlib.pylab as plt
+import numpy as np
 from tqdm import tqdm
-import sympy
 
 G = 9.8
 
 
-class elastic_pendulum:
+class ElasticPendulum:
     def __init__(self):
         self.original_length: float = 1
         self.delta_length: float = 0
@@ -21,7 +19,7 @@ class elastic_pendulum:
         self.time: float = 0
         self.dt: float = 0.01
 
-    def run_with_input(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def run_with_input(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         self.get_input()
         t = float(input("time>>"))
         return self.process(t)
@@ -30,43 +28,50 @@ class elastic_pendulum:
         self.original_length = float(input("Original length>>"))
         self.delta_length = float(input("delta length>>"))
         self.length_dot = float(input("length dot>>"))
-        self.theta = float(input("theta>>"))
-        self.theta_dot = float(input("theta dot>>"))
+        self.theta = math.radians(float(input("theta>>")))
+        self.theta_dot = math.radians(float(input("theta dot>>")))
         self.mass = float(input("mass>>"))
-        self.spring_constant = float(input("spring contant>>"))
+        self.spring_constant = float(input("spring constant>>"))
         self.dt = float(input("dt>>"))
 
-    def process(self, max_time: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def process(self, max_time: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         times = []
         thetas = []
         lengths = []
-        # pbar = tqdm(total=max_time)
-        for _ in tqdm(np.arange(self.time, max_time, self.dt)):
-            # while self.time < max_time:
-            times.append(self.time)
+        for i in tqdm(np.arange(self.time, max_time, self.dt)):
+            times.append(i)
             thetas.append(self.theta)
             lengths.append(self.length)
 
-            ΔΔθ = (
-                -G / self.length * math.sin(math.radians(self.theta))
-                - 2 * self.length_dot / self.length * self.theta_dot
-            )
-            ΔΔlength = (
-                self.length * self.theta_dot ** 2
-                - self.spring_constant / self.mass * self.delta_length
-                + G * math.cos(math.radians(self.theta))
-            )
+            self.RK4_step()
 
-            self.theta_dot += ΔΔθ * self.dt
-            self.length_dot += ΔΔlength * self.dt
+        self.time = max_time
 
-            self.theta += self.theta_dot * self.dt
-            self.delta_length += self.length_dot * self.dt
+        return np.array(times), np.array(thetas), np.array(lengths)
 
-            self.time += self.dt
-            # pbar.total = int(self.time)
-            # pbar.update(self.dt)
-        return (np.array(times), np.array(thetas), np.array(lengths))
+    def differentiate(self, info):
+        theta_dot, length_dot, theta, delta_length = info[0], info[1], info[2], info[3]
+        length = self.original_length + delta_length
+
+        length_double_dot = (length * theta_dot ** 2
+                             - self.spring_constant / self.mass * delta_length
+                             + G * math.cos(theta))
+        theta_double_dot = (-2.0 / length * length_dot * theta_dot
+                            - G / length * math.sin(theta))
+        return np.array([theta_double_dot, length_double_dot, theta_dot, length_dot])
+
+    def RK4_step(self):
+        info = np.array([self.theta_dot, self.length_dot, self.theta, self.delta_length])
+        k1 = self.differentiate(info)
+        k2 = self.differentiate(info + k1 * self.dt / 2)
+        k3 = self.differentiate(info + k2 * self.dt / 2)
+        k4 = self.differentiate(info + k3 * self.dt)
+        result = (k1 + 2 * k2 + 2 * k3 + k4) / 6 * self.dt
+
+        self.theta_dot += result[0]
+        self.length_dot += result[1]
+        self.theta += result[2]
+        self.delta_length += result[3]
 
     @property
     def length(self):
@@ -74,12 +79,12 @@ class elastic_pendulum:
 
 
 if __name__ == "__main__":
-    obj = elastic_pendulum()
-    times, thetas, lengths = obj.run_with_input()
+    obj = ElasticPendulum()
+    time, theta, length = obj.run_with_input()
     plt.figure(1)
     plt.title("thetas")
-    plt.plot(times, thetas)
+    plt.plot(time, theta)
     plt.figure(2)
     plt.title("lengths")
-    plt.plot(times, lengths)
+    plt.plot(time, length)
     plt.show()
