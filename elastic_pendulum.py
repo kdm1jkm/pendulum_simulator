@@ -32,7 +32,22 @@ class ElasticPendulum:
     def run_with_input(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         self.get_input()
         t = float(input("time>>"))
-        return self.process(t)
+        time, theta, length = self.process(t)
+        plt.figure(1)
+        plt.title("thetas")
+        plt.plot(time, theta)
+        plt.figure(2)
+        plt.title("lengths")
+        plt.plot(time, length)
+
+        fig = plt.figure(3)
+        ax = fig.gca(projection='3d')
+        x = length * np.sin(theta)
+        y = -(length * np.cos(theta))
+        ax.plot(x, time, y, label="x, y")
+        ax.legend()
+        plt.show()
+        return time, theta, length
 
     def get_input(self) -> None:
         self.original_length = float(input("Original length>>"))

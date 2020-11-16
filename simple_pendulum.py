@@ -35,7 +35,10 @@ class SimplePendulum:
     def run_with_input(self) -> Tuple[np.ndarray, np.ndarray]:
         self.get_input()
         t = float(input("time>>"))
-        return self.process(t)
+        theta, time = self.process(t)
+        plt.plot(theta, time)
+        plt.show()
+        return theta, time
 
     def get_input(self) -> None:
         self.length = float(input("length>>"))
