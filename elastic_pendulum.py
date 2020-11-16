@@ -36,16 +36,22 @@ class ElasticPendulum:
         plt.figure(1)
         plt.title("thetas")
         plt.plot(time, theta)
+
         plt.figure(2)
         plt.title("lengths")
         plt.plot(time, length)
 
-        fig = plt.figure(3)
-        ax = fig.gca(projection='3d')
         x = length * np.sin(theta)
         y = -(length * np.cos(theta))
-        ax.plot(x, time, y, label="x, y")
-        ax.legend()
+
+        plt.figure(3)
+        plt.title("x, y")
+        plt.plot(x, y)
+
+        plt.figure(4)
+        plt.gca(projection="3d")
+        plt.title("x, y, time")
+        plt.plot(x, time, y)
         plt.show()
         return time, theta, length
 
