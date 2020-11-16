@@ -6,8 +6,9 @@ import numpy as np
 import pygame
 from tqdm import tqdm
 
+import matplotlib.pylab as plt
+
 G = 9.8
-myfont = pygame.font.SysFont('Comic Sans MS', 38)
 w, h = 1024, 768
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -69,26 +70,31 @@ class SimplePendulum:
         screen = pygame.display.set_mode([w, h])
         clock = pygame.time.Clock()
 
+        fps = int(1 / self.dt)
+        print(fps)
+
         while True:
+            clock.tick(fps)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
 
-            x, y = self.length * math.sin(math.radians(self.theta)), self.length * math.sin(math.radians(self.theta))
+            coord = offset[0] + 500 * math.sin(math.radians(self.theta)), offset[1] + 500 * math.cos(
+                math.radians(self.theta))
 
             screen.fill(WHITE)
             pygame.draw.circle(screen, BLACK, offset, 8)
-            pygame.draw.circle(screen, BLUE, (x, y), 10)
+            pygame.draw.circle(screen, BLUE, coord, 10)
+            pygame.draw.line(screen, RED, offset, coord)
 
-            time_string = 'Time: {} seconds'.format(round(self.time, 1))
-            text = myfont.render(time_string, False, (0, 0, 0))
-            screen.blit(text, (10, 10))
+            pygame.display.flip()
 
             self.step()
-            clock.tick(int(1 / self.dt))
-            pygame.display.update()
 
 
 if __name__ == "__main__":
     obj = SimplePendulum()
     obj.simulate_with_input()
+    # theta, time = obj.run_with_input()
+    # plt.plot(theta, time)
+    # plt.show()

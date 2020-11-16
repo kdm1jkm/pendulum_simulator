@@ -3,6 +3,16 @@ import math
 import matplotlib.pylab as plt
 import numpy as np
 from tqdm import tqdm
+import pygame
+import sys
+
+w, h = 1024, 768
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+LT_BLUE = (230, 230, 255)
+offset = (w // 2, h // 4)
 
 G = 9.8
 
@@ -77,21 +87,52 @@ class ElasticPendulum:
     def length(self):
         return self.original_length + self.delta_length
 
+    def simulate_with_input(self) -> None:
+        self.get_input()
+        self.simulate()
+
+    def simulate(self):
+        pygame.init()
+        screen = pygame.display.set_mode([w, h])
+        clock = pygame.time.Clock()
+
+        fps = int(1 / self.dt)
+        print(fps)
+
+        while True:
+            clock.tick(fps)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+
+            coord = (offset[0] + 100 * math.sin(self.theta) * (self.length / self.original_length),
+                     offset[1] + 100 * math.cos(self.theta) * (self.length / self.original_length))
+
+            screen.fill(WHITE)
+            pygame.draw.circle(screen, BLACK, offset, 8)
+            pygame.draw.circle(screen, BLUE, coord, 10)
+            pygame.draw.line(screen, RED, offset, coord)
+
+            pygame.display.flip()
+
+            self.RK4_step()
+
 
 if __name__ == "__main__":
     obj = ElasticPendulum()
-    time, theta, length = obj.run_with_input()
-    plt.figure(1)
-    plt.title("thetas")
-    plt.plot(time, theta)
-    plt.figure(2)
-    plt.title("lengths")
-    plt.plot(time, length)
-
-    fig = plt.figure(3)
-    ax = fig.gca(projection='3d')
-    x = length * np.sin(theta)
-    y = -(length * np.cos(theta))
-    ax.plot(x, time, y, label="x, y")
-    ax.legend()
-    plt.show()
+    obj.simulate_with_input()
+    # time, theta, length = obj.run_with_input()
+    # plt.figure(1)
+    # plt.title("thetas")
+    # plt.plot(time, theta)
+    # plt.figure(2)
+    # plt.title("lengths")
+    # plt.plot(time, length)
+    #
+    # fig = plt.figure(3)
+    # ax = fig.gca(projection='3d')
+    # x = length * np.sin(theta)
+    # y = -(length * np.cos(theta))
+    # ax.plot(x, time, y, label="x, y")
+    # ax.legend()
+    # plt.show()
