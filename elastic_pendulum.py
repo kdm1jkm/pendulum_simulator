@@ -87,4 +87,11 @@ if __name__ == "__main__":
     plt.figure(2)
     plt.title("lengths")
     plt.plot(time, length)
+
+    fig = plt.figure(3)
+    ax = fig.gca(projection='3d')
+    x = length * np.sin(theta)
+    y = -(length * np.cos(theta))
+    ax.plot(x, time, y, label="x, y")
+    ax.legend()
     plt.show()
