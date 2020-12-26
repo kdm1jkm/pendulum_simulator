@@ -42,7 +42,7 @@ class SimplePendulum:
 
     def get_input(self) -> None:
         self.length = float(input("length>>"))
-        self.theta = float(input("theta>>"))
+        self.theta = math.radians(float(input("theta>>")))
         self.theta_dot = float(input("theta dot>>"))
         self.dt = float(input("dt>>"))
         self.radius = float(input("radius>>"))
@@ -61,10 +61,7 @@ class SimplePendulum:
 
     def step(self):
         mu = 6 * math.pi * self.viscosity * self.radius
-        double_dot_theta = (
-                -G / self.length * math.sin(math.radians(self.theta))
-                - mu * self.theta_dot * self.dt
-        )
+        double_dot_theta = -G / self.length * math.sin(self.theta) - mu * self.theta_dot * self.dt
         self.theta_dot += double_dot_theta * self.dt
         self.theta += self.theta_dot * self.dt
 
@@ -82,8 +79,7 @@ class SimplePendulum:
                 if event.type == pygame.QUIT:
                     sys.exit()
 
-            coord = offset[0] + 500 * math.sin(math.radians(self.theta)), offset[1] + 500 * math.cos(
-                math.radians(self.theta))
+            coord = offset[0] + 500 * math.sin(self.theta), offset[1] + 500 * math.cos(self.theta)
 
             screen.fill(WHITE)
             pygame.draw.circle(screen, BLACK, offset, 8)
