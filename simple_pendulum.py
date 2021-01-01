@@ -1,12 +1,13 @@
 import math
+import os
 import sys
+from datetime import datetime
 from typing import Tuple
 
+import matplotlib.pylab as plt
 import numpy as np
 import pygame
 from tqdm import tqdm
-
-import matplotlib.pylab as plt
 
 G = 9.8
 w, h = 1024, 768
@@ -34,11 +35,35 @@ class SimplePendulum:
 
     def run_with_input(self) -> Tuple[np.ndarray, np.ndarray]:
         self.get_input()
-        t = float(input("time>>"))
-        theta, time = self.process(t)
-        plt.plot(theta, time)
+        time = float(input("time>>"))
+        time, theta = self.process(time)
+        date = datetime.today().strftime("%Y%m%d-%H%M%S")
+
+        os.makedirs("result/" + date)
+
+        with open("result/" + date + "/time-theta.csv", "w") as f:
+            for i in range(len(time)):
+                f.write(str(time[i]))
+                f.write(",")
+                f.write(str(theta[i]))
+                f.write("\n")
+        with open("result/" + date + "/time-extreme.csv", "w") as f:
+            for i in self.get_extreme_value(theta):
+                f.write(str(time[i]))
+                f.write(",")
+                f.write(str(theta[i]))
+                f.write("\n")
+        plt.plot(time, theta)
         plt.show()
-        return theta, time
+        return time, theta
+
+    def get_extreme_value(self, values):
+        results = []
+        for i in tqdm(range(len(values) - 2)):
+            if (values[i + 1] - values[i]) * (values[i + 2] - values[i + 1]) < 0:
+                results.append(i)
+        print(results)
+        return results
 
     def get_input(self) -> None:
         self.length = float(input("length>>"))
