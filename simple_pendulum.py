@@ -42,7 +42,7 @@ class SimplePendulum:
         os.makedirs("result/" + date)
 
         with open("result/" + date + "/time-theta.csv", "w") as f:
-            for i in range(len(time)):
+            for i in tqdm(range(len(time))):
                 f.write(str(time[i]))
                 f.write(",")
                 f.write(str(theta[i]))
@@ -62,7 +62,6 @@ class SimplePendulum:
         for i in tqdm(range(len(values) - 2)):
             if (values[i + 1] - values[i]) * (values[i + 2] - values[i + 1]) < 0:
                 results.append(i)
-        print(results)
         return results
 
     def get_input(self) -> None:
