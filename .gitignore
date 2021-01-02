@@ -4,3 +4,4 @@ elastic.txt
 .vscode
 __pycache__
 result
+dist

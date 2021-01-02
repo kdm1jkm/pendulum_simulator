@@ -5,6 +5,8 @@ import numpy as np
 from tqdm import tqdm
 import pygame
 import sys
+import os
+from datetime import datetime
 
 w, h = 1024, 768
 WHITE = (255, 255, 255)
@@ -33,6 +35,21 @@ class ElasticPendulum:
         self.get_input()
         t = float(input("time>>"))
         time, theta, length = self.process(t)
+        x = length * np.sin(theta)
+        y = -(length * np.cos(theta))
+
+        date = datetime.today().strftime("%Y%m%d-%H%M%S")
+        os.makedirs("result/" + date)
+        with open("result/" + date + "/elastic.csv", "w") as f:
+            for i in tqdm(range(len(length))):
+                f.write(
+                    str(time[i]) + "," +
+                    str(theta[i]) + "," +
+                    str(length[i]) + "," +
+                    str(x[i]) + "," +
+                    str(y[i]) + "\n"
+                )
+
         plt.figure(1)
         plt.title("thetas")
         plt.plot(time, theta)
@@ -40,9 +57,6 @@ class ElasticPendulum:
         plt.figure(2)
         plt.title("lengths")
         plt.plot(time, length)
-
-        x = length * np.sin(theta)
-        y = -(length * np.cos(theta))
 
         plt.figure(3)
         plt.title("x, y")
