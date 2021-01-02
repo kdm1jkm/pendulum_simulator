@@ -9,14 +9,18 @@ import numpy as np
 import pygame
 from tqdm import tqdm
 
-G = 9.8
-w, h = 1024, 768
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-LT_BLUE = (230, 230, 255)
-offset = (w // 2, h // 4)
+from pygame_constants import *
+
+
+def get_extreme_value(values: np.ndarray) -> Tuple[List[float], List[float]]:
+    local_min = []
+    local_max = []
+    for i in tqdm(range(len(values) - 2)):
+        if values[i - 1] > values[i] and values[i + 1] > values[i]:
+            local_min.append(i)
+        if values[i - 1] < values[i] and values[i + 1] < values[i]:
+            local_max.append(i)
+    return local_min, local_max
 
 
 class SimplePendulum:
@@ -48,7 +52,7 @@ class SimplePendulum:
                 f.write(",")
                 f.write(str(theta[i]))
                 f.write("\n")
-        local_min, local_max = self.get_extreme_value(theta)
+        local_min, local_max = get_extreme_value(theta)
         with open("result/" + date + "/time-local_min.csv", "w") as f:
             for i in local_min:
                 f.write(str(time[i]))
@@ -64,16 +68,6 @@ class SimplePendulum:
         plt.plot(time, theta)
         plt.show()
         return time, theta
-
-    def get_extreme_value(self, values: np.ndarray) -> Tuple[List[float], List[float]]:
-        local_min = []
-        local_max = []
-        for i in tqdm(range(len(values) - 2)):
-            if values[i - 1] > values[i] and values[i + 1] > values[i]:
-                local_min.append(i)
-            if values[i - 1] < values[i] and values[i + 1] < values[i]:
-                local_max.append(i)
-        return local_min, local_max
 
     def get_input(self) -> None:
         self.length = float(input("length>>"))

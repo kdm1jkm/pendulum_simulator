@@ -8,15 +8,7 @@ import sys
 import os
 from datetime import datetime
 
-w, h = 1024, 768
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-LT_BLUE = (230, 230, 255)
-offset = (w // 2, h // 4)
-
-G = 9.8
+from pygame_constants import *
 
 
 class ElasticPendulum:
