@@ -2,7 +2,7 @@ import math
 import os
 import sys
 from datetime import datetime
-from typing import Tuple
+from typing import *
 
 import matplotlib.pylab as plt
 import numpy as np
@@ -28,6 +28,7 @@ class SimplePendulum:
         self.radius: float = 0.01
         self.viscosity: float = 0.0000174
         self.time: float = 0
+        self.mass: float = 0.1
 
     def simulate_with_input(self) -> None:
         self.get_input()
@@ -47,8 +48,15 @@ class SimplePendulum:
                 f.write(",")
                 f.write(str(theta[i]))
                 f.write("\n")
-        with open("result/" + date + "/time-extreme.csv", "w") as f:
-            for i in self.get_extreme_value(theta):
+        local_min, local_max = self.get_extreme_value(theta)
+        with open("result/" + date + "/time-local_min.csv", "w") as f:
+            for i in local_min:
+                f.write(str(time[i]))
+                f.write(",")
+                f.write(str(theta[i]))
+                f.write("\n")
+        with open("result/" + date + "/time-local_max.csv", "w") as f:
+            for i in local_max:
                 f.write(str(time[i]))
                 f.write(",")
                 f.write(str(theta[i]))
@@ -57,12 +65,15 @@ class SimplePendulum:
         plt.show()
         return time, theta
 
-    def get_extreme_value(self, values):
-        results = []
+    def get_extreme_value(self, values: np.ndarray) -> Tuple[List[float], List[float]]:
+        local_min = []
+        local_max = []
         for i in tqdm(range(len(values) - 2)):
-            if (values[i + 1] - values[i]) * (values[i + 2] - values[i + 1]) < 0:
-                results.append(i)
-        return results
+            if values[i - 1] > values[i] and values[i + 1] > values[i]:
+                local_min.append(i)
+            if values[i - 1] < values[i] and values[i + 1] < values[i]:
+                local_max.append(i)
+        return local_min, local_max
 
     def get_input(self) -> None:
         self.length = float(input("length>>"))
@@ -71,6 +82,7 @@ class SimplePendulum:
         self.dt = float(input("dt>>"))
         self.radius = float(input("radius>>"))
         self.viscosity = float(input("viscosity>>"))
+        self.mass = float(input("mass>>"))
 
     def process(self, max_time: float) -> Tuple[np.ndarray, np.ndarray]:
         times = []
@@ -84,7 +96,7 @@ class SimplePendulum:
         return np.array(times), np.array(thetas)
 
     def step(self):
-        mu = 6 * math.pi * self.viscosity * self.radius
+        mu = 6 * math.pi * self.viscosity * self.radius / self.mass
         double_dot_theta = -G / self.length * math.sin(self.theta) - mu * self.theta_dot * self.dt
         self.theta_dot += double_dot_theta * self.dt
         self.theta += self.theta_dot * self.dt
