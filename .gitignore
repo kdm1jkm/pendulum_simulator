@@ -5,3 +5,5 @@ elastic.txt
 __pycache__
 result
 dist
+build
+*.spec
