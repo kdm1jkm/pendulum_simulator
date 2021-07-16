@@ -12,14 +12,21 @@ from tqdm import tqdm
 from pygame_constants import *
 
 
-def get_extreme_value(values: np.ndarray) -> Tuple[List[float], List[float]]:
+def get_extreme_value(values: np.ndarray, show_status: bool = True) -> Tuple[List[float], List[float]]:
     local_min = []
     local_max = []
-    for i in tqdm(range(len(values) - 2)):
-        if values[i - 1] > values[i] and values[i + 1] > values[i]:
-            local_min.append(i)
-        if values[i - 1] < values[i] and values[i + 1] < values[i]:
-            local_max.append(i)
+    if show_status:
+        for i in tqdm(range(len(values) - 2)):
+            if values[i - 1] > values[i] and values[i + 1] > values[i]:
+                local_min.append(i)
+            if values[i - 1] < values[i] and values[i + 1] < values[i]:
+                local_max.append(i)
+    else:
+        for i in range(len(values) - 2):
+            if values[i - 1] > values[i] and values[i + 1] > values[i]:
+                local_min.append(i)
+            if values[i - 1] < values[i] and values[i + 1] < values[i]:
+                local_max.append(i)
     return local_min, local_max
 
 
@@ -78,14 +85,21 @@ class SimplePendulum:
         self.viscosity = float(input("viscosity>>"))
         self.mass = float(input("mass>>"))
 
-    def process(self, max_time: float) -> Tuple[np.ndarray, np.ndarray]:
+    def process(self, max_time: float, show_status: bool = True) -> Tuple[np.ndarray, np.ndarray]:
         times = []
         thetas = []
-        for i in tqdm(np.arange(self.time, max_time, self.dt)):
-            times.append(i)
-            thetas.append(self.theta)
+        if show_status:
+            for i in tqdm(np.arange(self.time, max_time, self.dt)):
+                times.append(i)
+                thetas.append(self.theta)
 
-            self.step()
+                self.step()
+        else:
+            for i in np.arange(self.time, max_time, self.dt):
+                times.append(i)
+                thetas.append(self.theta)
+
+                self.step()
 
         return np.array(times), np.array(thetas)
 
