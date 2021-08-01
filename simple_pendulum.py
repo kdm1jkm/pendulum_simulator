@@ -11,6 +11,8 @@ from tqdm import tqdm
 
 from pygame_constants import *
 
+from PendulumSimulator import PendulumSimulator
+
 
 def get_extreme_value(values: np.ndarray, show_status: bool = True) -> Tuple[List[float], List[float]]:
     local_min = []
@@ -30,7 +32,7 @@ def get_extreme_value(values: np.ndarray, show_status: bool = True) -> Tuple[Lis
     return local_min, local_max
 
 
-class SimplePendulum:
+class SimplePendulum(PendulumSimulator):
     def __init__(self):
         self.length: float = 1
         self.theta: float = 60
@@ -105,7 +107,8 @@ class SimplePendulum:
 
     def step(self):
         mu = 6 * math.pi * self.viscosity * self.radius / self.mass
-        double_dot_theta = -G / self.length * math.sin(self.theta) - mu * self.theta_dot * self.dt
+        double_dot_theta = -G / self.length * \
+            math.sin(self.theta) - mu * self.theta_dot * self.dt
         self.theta_dot += double_dot_theta * self.dt
         self.theta += self.theta_dot * self.dt
 
@@ -123,7 +126,8 @@ class SimplePendulum:
                 if event.type == pygame.QUIT:
                     sys.exit()
 
-            coord = offset[0] + 500 * math.sin(self.theta), offset[1] + 500 * math.cos(self.theta)
+            coord = offset[0] + 500 * \
+                math.sin(self.theta), offset[1] + 500 * math.cos(self.theta)
 
             screen.fill(WHITE)
             pygame.draw.circle(screen, BLACK, offset, 8)

@@ -6,6 +6,8 @@ from tqdm import tqdm
 import pygame
 import sys
 
+from PendulumSimulator import PendulumSimulator
+
 w, h = 1024, 768
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -17,7 +19,7 @@ offset = (w // 2, h // 4)
 G = 9.8
 
 
-class DoublePendulum:
+class DoublePendulum(PendulumSimulator):
     def __init__(self):
         self.length1: float = 2
         self.length2: float = 1
@@ -60,13 +62,13 @@ class DoublePendulum:
 
     def get_input(self) -> None:
         self.length1 = float(input("length1>>"))
-        self.theta1 = float(input("theta1>>"))
-        self.theta_dot1 = float(input("theta_dot1>>"))
+        self.theta1 = math.radians(float(input("theta1>>")))
+        self.theta_dot1 = math.radians(float(input("theta_dot1>>")))
         self.mass1 = float(input("mass1>>"))
 
         self.length2 = float(input("length2>>"))
-        self.theta2 = float(input("theta2>>"))
-        self.theta_dot2 = float(input("theta_dot2>>"))
+        self.theta2 = math.radians(float(input("theta2>>")))
+        self.theta_dot2 = math.radians(float(input("theta_dot2>>")))
         self.mass2 = float(input("mass2>>"))
 
         self.dt = float(input("dt>>"))
@@ -90,15 +92,16 @@ class DoublePendulum:
         theta_dot1, theta_dot2, theta1, theta2 = info[0], info[1], info[2], info[3]
 
         m = np.array([[(self.mass1 + self.mass2) * self.length1, self.mass2 * self.length2 * math.cos(theta1 - theta2)],
-                      [self.length1 * math.cos(theta1 - theta2), self.length2]])
-        f = np.array([-self.mass2 * self.length2 * theta_dot2 * math.sin(theta1 - theta2) - (
-                self.mass1 + self.mass2) * G * math.sin(theta1),
-                      self.length1 * (theta_dot1 ** 2) * math.sin(theta1 - theta2) - G * math.sin(theta2)])
+                      [self.mass2 * self.length1 * math.cos(theta1 - theta2), self.mass2 * self.length2]])
+        f = np.array([-self.mass2 * self.length1 * (theta_dot2 ** 2) * math.sin(theta1 - theta2) - (
+            self.mass1 + self.mass2) * G * math.sin(theta1),
+            self.mass2 * self.length1 * (theta_dot1 ** 2) * math.sin(theta1 - theta2) - self.mass2 * G * math.sin(theta2)])
         theta_double_dot1, theta_double_dot2 = np.linalg.inv(m).dot(f)
         return np.array([theta_double_dot1, theta_double_dot2, theta_dot1, theta_dot2])
 
     def RK4_step(self):
-        info = np.array([self.theta_dot1, self.theta_dot2, self.theta1, self.theta2])
+        info = np.array([self.theta_dot1, self.theta_dot2,
+                         self.theta1, self.theta2])
         k1 = self.differentiate(info)
         k2 = self.differentiate(info + k1 * self.dt / 2)
         k3 = self.differentiate(info + k2 * self.dt / 2)
@@ -144,13 +147,16 @@ class DoublePendulum:
             pygame.draw.circle(screen, BLUE, coord2, 10)
             pygame.draw.line(screen, RED, coord1, coord2)
 
-            pygame.draw.line(screen, BLUE, coord1, np.array(coord1) + result[0]*10)
-            pygame.draw.line(screen, BLUE, coord2, np.array(coord2) + result[1]*10)
-            pygame.draw.line(screen, RED, coord1, np.array(coord1) + result[2]*10)
-            pygame.draw.line(screen, RED, coord2, np.array(coord2) + result[3]*10)
+            pygame.draw.line(screen, BLUE, coord1,
+                             np.array(coord1) + result[0]*10)
+            pygame.draw.line(screen, BLUE, coord2,
+                             np.array(coord2) + result[1]*10)
+            pygame.draw.line(screen, RED, coord1,
+                             np.array(coord1) + result[2]*10)
+            pygame.draw.line(screen, RED, coord2,
+                             np.array(coord2) + result[3]*10)
 
             pygame.display.flip()
-
 
 
 if __name__ == "__main__":

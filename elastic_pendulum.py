@@ -8,10 +8,12 @@ import sys
 import os
 from datetime import datetime
 
+from PendulumSimulator import PendulumSimulator
+
 from pygame_constants import *
 
 
-class ElasticPendulum:
+class ElasticPendulum(PendulumSimulator):
     def __init__(self):
         self.original_length: float = 1
         self.delta_length: float = 0
@@ -98,7 +100,8 @@ class ElasticPendulum:
         return np.array([theta_double_dot, length_double_dot, theta_dot, length_dot])
 
     def RK4_step(self):
-        info = np.array([self.theta_dot, self.length_dot, self.theta, self.delta_length])
+        info = np.array([self.theta_dot, self.length_dot,
+                        self.theta, self.delta_length])
         k1 = self.differentiate(info)
         k2 = self.differentiate(info + k1 * self.dt / 2)
         k3 = self.differentiate(info + k2 * self.dt / 2)
